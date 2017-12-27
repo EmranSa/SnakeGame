@@ -1,0 +1,28 @@
+﻿body {
+    padding: 50px;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+    color: #00B7FF;
+}
+
+.gameContext {
+    border: solid;
+    border-radius: 5px;
+    border-width: 2px;
+    border-color: #0094ff;
+    margin-left: auto;
+    margin-right: auto;
+    display: -webkit-box;
+}
+
+h1 {
+    margin-left: auto;
+    margin-right: auto;
+    display: table;
+}
+
+.display-none{
+    display:none;
+}

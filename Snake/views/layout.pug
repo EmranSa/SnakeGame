@@ -1,0 +1,13 @@
+﻿doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/main.css')
+    block scripts
+      script(src='/jquery/jquery.js')
+      script(src='/javascripts/jquery.signalR-2.2.2.js')
+      script(src='signalr/hubs')
+      script(src='/javascripts/globallib.js')
+      script(src='/javascripts/client.js')
+  body
+    block content

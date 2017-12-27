@@ -1,0 +1,10 @@
+﻿extends layout
+
+block content
+  h1= title
+  #startGame
+    p To start #{title} plase enter you'r name and then press Start Game
+    input(type="text", id="userName")
+    button(id="btnStart") Start Game
+  #snakes.display-none
+    canvas#gameContext.gameContext(height="400",width="500")
