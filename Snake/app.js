@@ -38,6 +38,9 @@ const gameInfoHolder = {
     clientsInfo: [],
     initNewClient: function (connectionid, userName, color) {
         this.clientsInfo.push({ connectionid: connectionid, userName: userName, color: color });
+    },
+    reset: function () {
+        this.clientsInfo = [];
     }
 };
 
@@ -60,13 +63,13 @@ function generateLocation() {
 //Create the hub connection 
 //NOTE: Server methods are defined as an object on the second argument 
 signalR.hub('signalRHub', {
-    startNewClient: function (connectionid, userName, color/*, clientCanvasWidth, clientCanvasHeight*/) {
-        /*if (_isFirstUser) {
+    startNewClient: function (connectionid, userName, color, clientCanvasWidth, clientCanvasHeight) {
+        if (_isFirstUser) {
             _clientCanvasWidth = clientCanvasWidth;
             _clientCanvasHeight = clientCanvasHeight;
             _isFirstUser = false;
             generateLocation();
-        }*/
+        }
 
         this.clients.all.invoke('startBrodcastClient').withArgs([gameInfoHolder.clientsInfo, connectionid, userName, color]);
         gameInfoHolder.initNewClient(connectionid, userName, color);
@@ -74,13 +77,17 @@ signalR.hub('signalRHub', {
     setRemoteDirection: function(snakeId, direction) {
         this.clients.all.invoke('setRemoteDirectionCallBack').withArgs([snakeId, direction]);
     },
-    /*getLastLocation: function() {
+    getLastLocation: function() {
         this.clients.all.invoke('getLastLocationCallBack').withArgs([_lastFoodXY]);
     },
     generateFood: function() {
         generateLocation(); 
         this.clients.all.invoke('generateFoodCallBack').withArgs([_lastFoodXY]);
-    }*/
+    },
+    globalReset: function () {
+        gameInfoHolder.reset();
+        this.clients.all.invoke('globalResetCallBack').withArgs(['Reset']);
+    }
 });
 
 app.use(express.static(__dirname));

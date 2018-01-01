@@ -28,9 +28,10 @@ class SignalR {
                     $('#startGame').hide();
                     $('#snakes').show();
                     game.start();
+                    this.getLastLocation();
                 }
             };
-            
+
             /*if (this.connectionid == connectionid || (this.game === null && this.connectionid != connectionid)) {
                 startNewGame();
             }*/
@@ -60,10 +61,25 @@ class SignalR {
             }
         };
 
+        this.client.getLastLocationCallBack = (_lastFoodXY) => {
+            food = _lastFoodXY;
+        };
+
+        this.client.generateFoodCallBack = (_lastFoodXY) => {
+            food = _lastFoodXY;
+        };
+
+        this.client.globalResetCallBack = (Reset) => {
+            location.reload();
+        }
+
         $.connection.hub.start().done(() => {
             this.server = this.signalRHub.server;
             this.startNewClient = this.server.startNewClient;
             this.setRemoteDirection = this.server.setRemoteDirection;
+            this.getLastLocation = this.server.getLastLocation;
+            this.generateFood = this.server.generateFood;
+            this.globalReset = this.server.globalReset;
             this.connectionid = $.connection.hub.id;
             //$.connection.$user(this.connectionid);
         }).fail((a) => {
@@ -108,13 +124,15 @@ class Keyboard {
     }
 }
 
+let food = {};
 class Snake {
-    constructor(snakeId, canvas, context, configuration, readonly, color) {
+    constructor(snakeId, canvas, context, configuration, readonly, color, scoreLocation) {
         // Init
         this.snakeId = snakeId;
         this.color = color;
         this.readonly = readonly;
         this.context = context;
+        this.scoreLocation = scoreLocation;
         if (!readonly) {
             this.Keyboard = new Keyboard(()=> {
                 signalR.setRemoteDirection(this.snakeId, this.Keyboard.CurrentKey);
@@ -123,7 +141,7 @@ class Snake {
         this.width = canvas.width;
         this.height = canvas.height;
         this.snakeLength = [];
-        this.food = {};
+        //this.food = {};
         this.score = 0;
         this.direction = 'right';
         this.configuration = {
@@ -145,14 +163,17 @@ class Snake {
         this.initSnake();
 
         // Init Food
-        this.initFood();
+        //this.initFood();
     }
 
-    initFood() {
-        this.food = {
+    initFood(generateNewLoc = false) {
+        if (generateNewLoc) {
+            signalR.generateFood();
+        }
+        /*this.food = {
             x: Math.round(Math.random() * (this.width - this.configuration.cw) / this.configuration.cw),
             y: Math.round(Math.random() * (this.height - this.configuration.cw) / this.configuration.cw),
-        };
+        };*/
     }
 
     initSnake() {
@@ -220,10 +241,10 @@ class Snake {
         }
 
         // Logic of Snake food
-        if (nx == this.food.x && ny == this.food.y) {
+        if (nx == food.x && ny == food.y) {
             var tail = { x: nx, y: ny };
             this.score++;
-            this.initFood();
+            this.initFood(true);
         }
         else {
             var tail = this.snakeLength.pop();
@@ -239,10 +260,15 @@ class Snake {
         }
 
         // Draw Food
-        this.drawCell(this.food.x, this.food.y);
+        this.drawCell(food.x, food.y);
 
         // Draw Score
-        this.context.fillText('Your Score: ' + this.score, this.width - 70, (this.height - 5));
+        if (this.readonly) {
+            this.context.fillText('Other Player: ' + this.score, (this.width - 70 - this.scoreLocation), (this.height - 5));
+        }
+        else {
+            this.context.fillText('Your Score: ' + this.score, (this.width - 70 - this.scoreLocation), (this.height - 5));
+        }
     }
 
     drawCell(x, y, isFirst) {
@@ -264,11 +290,13 @@ class Snake {
 class Game {
     constructor(snakeId, elementId, configuration) {
         // Init
+        this.scoreLocation = 0;
         this.canvas = document.getElementById(elementId);
         this.context = this.canvas.getContext("2d");
-        this.snake = new Snake(snakeId, this.canvas, this.context, configuration, false, 'red');
+        this.snake = new Snake(snakeId, this.canvas, this.context, configuration, false, 'red', this.scoreLocation);
         this.otherUsersSnakes = [];
         this.timer = null;
+        
     }
 
     start() {
@@ -300,8 +328,9 @@ class Game {
     }
 
     joinSnake(snakeId, color) {
+        this.scoreLocation += 100;
         this.otherUsersSnakes.push({
-            snakeId: snakeId, snake: new Snake(snakeId, this.canvas, this.context, this.configuration, true, color)
+            snakeId: snakeId, snake: new Snake(snakeId, this.canvas, this.context, this.configuration, true, color, this.scoreLocation)
         });
     }
 
@@ -322,6 +351,10 @@ $(document).ready(() => {
     signalR.init();
     $('#btnStart').click(() => {
         game = new Game(signalR.connectionid, 'gameContext', { fps: 100, size: 4 });
-        signalR.startNewClient(signalR.connectionid, $('#userName').val()/*, game.canvas.width, game.canvas.height*/);
+        signalR.startNewClient(signalR.connectionid, $('#userName').val(), 'gray', game.canvas.width, game.canvas.height);
     });
+    $('#btnGlobalReset').click(() => {
+        signalR.globalReset();
+        location.reload();
+    })
 });

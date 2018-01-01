@@ -6,18 +6,24 @@
     "start": "node app"
   },
   "description": "Snake",
-  "author": {
-    "name": "Emran"
-  },
+  "author": "Emran",
   "dependencies": {
     "body-parser": "^1.15.0",
     "cookie-parser": "^1.4.0",
     "debug": "^2.2.0",
     "express": "^4.14.0",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-minify": "^2.1.0",
+    "gulp-size": "^2.1.0",
+    "gulp-uglify": "^3.0.0",
     "jquery": "^3.2.1",
     "morgan": "^1.7.0",
     "pug": "^2.0.0-beta6",
     "serve-favicon": "^2.3.0",
     "signalrjs": "^0.2.2"
-  }
+  },
+  "devDependencies": {},
+  "main": "app.js",
+  "license": "ISC"
 }
